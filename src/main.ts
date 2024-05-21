@@ -87,7 +87,7 @@ const app = new OpenAPIHono();
 {
 
 
-    const zTodo = z
+    const TodoSchema = z
         .object({
             id: z.string().openapi({
                 example: '123',
@@ -106,7 +106,7 @@ const app = new OpenAPIHono();
             200: {
                 content: {
                     'application/json': {
-                        schema: z.array(zTodo),
+                        schema: z.array(TodoSchema),
                     },
                 },
                 description: "Get all user's todo",
