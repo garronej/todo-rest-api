@@ -21,7 +21,7 @@ const app = new OpenAPIHono();
 
 {
 
-    const ParamsSchema = z.object({
+    const zParam = z.object({
         id: z
             .string()
             .min(1)
@@ -48,7 +48,7 @@ const app = new OpenAPIHono();
         method: 'put',
         path: '/todo/{id}',
         request: {
-            params: ParamsSchema,
+            params: zParam,
         },
         responses: {
             200: {
@@ -87,7 +87,7 @@ const app = new OpenAPIHono();
 {
 
 
-    const TodoSchema = z
+    const zTodo = z
         .object({
             id: z.string().openapi({
                 example: '123',
@@ -106,7 +106,7 @@ const app = new OpenAPIHono();
             200: {
                 content: {
                     'application/json': {
-                        schema: z.array(TodoSchema),
+                        schema: z.array(zTodo),
                     },
                 },
                 description: "Get all user's todo",
@@ -134,7 +134,7 @@ const app = new OpenAPIHono();
 
 {
 
-    const ParamsSchema = z.object({
+    const zParam = z.object({
         id: z
             .string()
             .min(1)
@@ -151,7 +151,7 @@ const app = new OpenAPIHono();
         method: 'delete',
         path: '/todo/{id}',
         request: {
-            params: ParamsSchema,
+            params: zParam,
         },
         responses: {
             200: {
@@ -186,10 +186,14 @@ const app = new OpenAPIHono();
 app.doc('/doc', {
     openapi: '3.0.0',
     info: {
-        version: '1.0.0',
+        version: "1.0.0",
         title: 'My API',
     },
-})
+});
+
+
+`echo $(node -e 'console.log(require("url").parse(require("./package.json").homepage).host)') > dist/CNAME`
+
 
 const port = process.env.PORT ? parseInt(process.env.PORT) : 443
 
