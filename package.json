@@ -1,0 +1,37 @@
+{
+    "name": "todo-rest-api",
+    "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/InseeFrLab/todo-rest-api.git"
+    },
+    "scripts": {
+        "build": "tsc && ncc build dist/main.js",
+        "dev": "yarn build && dotenv -e .env.local -- node dist",
+        "_format": "prettier \"**/*.{ts,tsx,json,md}\"",
+        "format": "yarn run _format --write",
+        "format:check": "yarn run _format --list-different"
+    },
+    "author": "u/garronej",
+    "license": "MIT",
+    "keywords": [],
+    "dependencies": {
+        "@hono/node-server": "^1.11.1",
+        "@hono/zod-openapi": "^0.13.0",
+        "hono": "^4.3.2",
+        "jwt-simple": "^0.5.6",
+        "keycloak-backend": "^2.0.1",
+        "memoizee": "^0.4.15",
+        "node-fetch": "^3.3.2",
+        "tsafe": "^1.6.6",
+        "url-join": "^5.0.0",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/memoizee": "^0.4.11",
+        "@types/node": "^20.12.12",
+        "@vercel/ncc": "^0.38.1",
+        "dotenv-cli": "^7.4.1",
+        "typescript": "^5.4.5"
+    }
+}
