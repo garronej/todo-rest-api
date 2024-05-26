@@ -11,6 +11,7 @@ You need to set the following environment variables.
 
 ```.env
 OIDC_ISSUER=https://auth.code.gouv.fr/auth/realms/playground
+PORT=8080
 ```
 
 This is a demo with our Keycloak instance, adapt for your own OIDC provider.  

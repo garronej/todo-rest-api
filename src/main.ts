@@ -202,7 +202,11 @@ app.doc('/doc', {
     },
 });
 
-const port = process.env.PORT ? parseInt(process.env.PORT) : 80
+if( process.env.PORT === undefined ) {
+    throw new Error("PORT must be defined in the environment variables")
+}
+
+const port = parseInt(process.env.PORT);
 
 serve({
     fetch: app.fetch,
