@@ -191,10 +191,6 @@ app.doc('/doc', {
     },
 });
 
-
-`echo $(node -e 'console.log(require("url").parse(require("./package.json").homepage).host)') > dist/CNAME`
-
-
 const port = process.env.PORT ? parseInt(process.env.PORT) : 443
 
 serve({
