@@ -12,9 +12,8 @@ export type Context = {
 
 export function createValidateAndDecodeAccessToken(params: {
     oidcIssuer: string;
-    oidcClientId: string;
 }) {
-    const { oidcClientId, oidcIssuer } = params;
+    const { oidcIssuer } = params;
 
     const match = oidcIssuer.match(/realms\/([^/]+)+\/?$/);
 
@@ -27,7 +26,6 @@ export function createValidateAndDecodeAccessToken(params: {
     const { validateKeycloakSignature } = createValidateKeycloakSignature({
         url: keycloakUrl,
         realm: keycloakRealm,
-        clientId: oidcClientId
     })
 
     async function validateAndDecodeAccessToken(

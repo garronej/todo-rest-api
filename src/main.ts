@@ -5,15 +5,13 @@ import { HTTPException } from "hono/http-exception";
 import { getUserTodoStore } from "./todo";
 
 const oidcIssuer = process.env.OIDC_ISSUER
-const oidcClientId = process.env.OIDC_CLIENT_ID
 
-if (oidcIssuer === undefined || oidcClientId === undefined) {
-    throw new Error("OIDC_ISSUER and OIDC_CLIENT_ID must be defined in the environment variables")
+if (oidcIssuer === undefined ) {
+    throw new Error("OIDC_ISSUER must be defined in the environment variables")
 }
 
 const { validateAndDecodeAccessToken } = createValidateAndDecodeAccessToken({
-    oidcIssuer,
-    oidcClientId
+    oidcIssuer
 });
 
 
@@ -21,34 +19,44 @@ const app = new OpenAPIHono();
 
 {
 
-    const zParam = z.object({
-        id: z
-            .string()
-            .min(1)
-            .openapi({
-                param: {
-                    name: 'id',
-                    in: 'path',
-                },
-                example: '1212121',
-            }),
-        text: z
-            .string()
-            .min(1)
-            .openapi({
-                param: {
-                    name: "text",
-                    in: "query",
-                },
-                example: "Clean my room",
-            }),
-    });
-
     const route = createRoute({
         method: 'put',
         path: '/todo/{id}',
         request: {
-            params: zParam,
+            params: z.object({
+                id: z
+                    .string()
+                    .min(1)
+                    .openapi({
+                        param: {
+                            name: 'id',
+                            in: 'path',
+                        },
+                        example: '1212121',
+                    })
+            }),
+            query: z.object({
+                text: z
+                    .string()
+                    .min(1)
+                    .openapi({
+                        param: {
+                            name: "text",
+                            in: "query",
+                        },
+                        example: "Clean my room",
+                    }),
+                isDone: z
+                    .boolean()
+                    .openapi({
+                        param: {
+                            name: "isDone",
+                            in: "query",
+                        },
+                        example: false,
+                    }),
+            })
+
         },
         responses: {
             200: {
@@ -63,16 +71,17 @@ const app = new OpenAPIHono();
             authorizationReqHeaderValue: c.req.header("Authorization")
         });
 
-        const { id, text } = c.req.valid("param");
-
         if (decodedAccessToken === undefined) {
             throw new HTTPException(401);
         }
 
+        const { id } = c.req.valid("param");
+        const { text, isDone } = c.req.valid("query");
+
         getUserTodoStore(decodedAccessToken.sub).addOrUpdate({
             id,
             text,
-            isDone: false
+            isDone
         });
 
         return c.json({
@@ -86,19 +95,6 @@ const app = new OpenAPIHono();
 
 {
 
-
-    const zTodo = z
-        .object({
-            id: z.string().openapi({
-                example: '123',
-            }),
-            text: z.string().openapi({
-                example: 'Clean my room',
-            }),
-            isDone: z.boolean()
-        })
-        .openapi('todo');
-
     const route = createRoute({
         method: 'get',
         path: '/todos',
@@ -106,7 +102,21 @@ const app = new OpenAPIHono();
             200: {
                 content: {
                     'application/json': {
-                        schema: z.array(zTodo),
+                        schema: z.array(
+                            z
+                                .object({
+                                    id: z.string().openapi({
+                                        example: '123',
+                                    }),
+                                    text: z.string().openapi({
+                                        example: 'Clean my room',
+                                    }),
+                                    isDone: z.boolean().openapi({
+                                        example: false,
+                                    })
+                                })
+                                .openapi("Todo")
+                        )
                     },
                 },
                 description: "Get all user's todo",
@@ -134,24 +144,23 @@ const app = new OpenAPIHono();
 
 {
 
-    const zParam = z.object({
-        id: z
-            .string()
-            .min(1)
-            .openapi({
-                param: {
-                    name: 'id',
-                    in: 'path',
-                },
-                example: '1212121',
-            }),
-    });
 
     const route = createRoute({
         method: 'delete',
         path: '/todo/{id}',
         request: {
-            params: zParam,
+            params: z.object({
+                id: z
+                    .string()
+                    .min(1)
+                    .openapi({
+                        param: {
+                            name: 'id',
+                            in: 'path',
+                        },
+                        example: '1212121',
+                    }),
+            })
         },
         responses: {
             200: {
@@ -198,5 +207,5 @@ serve({
     port
 })
 
-console.log(`\nServer running on port ${port}`)
+console.log(`\nServer running. OpenAPI documentation available at http://localhost:${port}/doc`)
 

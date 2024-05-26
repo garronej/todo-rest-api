@@ -8,20 +8,22 @@ import createKeycloakBacked from "keycloak-backend";
 export type KeycloakParams = {
     url: string;
     realm: string;
-    clientId: string;
 };
 
 export function createValidateKeycloakSignature(params: KeycloakParams) {
-    const { url, realm, clientId } = params;
+    const { url, realm } = params;
 
     const getKeycloakBackendVerifyOffline = memoize(
         async () => {
             const cert = await fetchKeycloakRealmPublicCert({ url, realm });
 
+            console.log(cert);
+
             const keycloakBackend = createKeycloakBacked({
                 realm,
                 "auth-server-url": url.replace("/auth", ""),
-                "client_id": clientId
+                // TODO: Replace by "any" or something, we don't need to know the client id
+                "client_id": "vite-insee-starter"
             });
 
             async function keycloakBackendVerifyOffline(params: { keycloakOidcAccessToken: string }): Promise<void> {
