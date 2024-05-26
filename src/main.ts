@@ -186,7 +186,7 @@ const app = new OpenAPIHono();
 app.doc('/doc', {
     openapi: '3.0.0',
     info: {
-        version: "1.0.2",
+        version: "1.0.3",
         title: 'My API',
     },
 });
