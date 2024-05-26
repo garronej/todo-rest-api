@@ -6,6 +6,8 @@ import { getUserTodoStore } from "./todo";
 
 const oidcIssuer = process.env.OIDC_ISSUER
 
+console.log(`OIDC_ISSUER: ${oidcIssuer}`);
+
 if (oidcIssuer === undefined ) {
     throw new Error("OIDC_ISSUER must be defined in the environment variables")
 }
