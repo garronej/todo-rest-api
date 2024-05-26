@@ -200,7 +200,7 @@ app.doc('/doc', {
     },
 });
 
-const port = process.env.PORT ? parseInt(process.env.PORT) : 443
+const port = process.env.PORT ? parseInt(process.env.PORT) : 80
 
 serve({
     fetch: app.fetch,
