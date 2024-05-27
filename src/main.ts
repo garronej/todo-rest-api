@@ -19,6 +19,13 @@ const { validateAndDecodeAccessToken } = createValidateAndDecodeAccessToken({
 
 const app = new OpenAPIHono();
 
+app.use("*", (c, next) => {
+    c.header("Access-Control-Allow-Origin", "*"); 
+    c.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    c.header("Access-Control-Allow-Headers", "Content-Type, Accept");
+    return next();
+});
+
 {
 
     const route = createRoute({
