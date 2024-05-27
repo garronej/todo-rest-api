@@ -204,7 +204,7 @@ app.use("*", (c, next) => {
 app.doc('/doc', {
     openapi: '3.0.0',
     info: {
-        version: "1.0.6",
+        version: "1.0.7",
         title: 'My API',
     },
 });
