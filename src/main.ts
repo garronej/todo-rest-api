@@ -3,6 +3,8 @@ import { serve } from "@hono/node-server"
 import { createValidateAndDecodeAccessToken } from "./tools/validateAndDecodeAccessToken"
 import { HTTPException } from "hono/http-exception";
 import { getUserTodoStore } from "./todo";
+import { cors } from "hono/cors";
+
 
 const oidcIssuer = process.env.OIDC_ISSUER
 
@@ -19,12 +21,7 @@ const { validateAndDecodeAccessToken } = createValidateAndDecodeAccessToken({
 
 const app = new OpenAPIHono();
 
-app.use("*", (c, next) => {
-    c.header("Access-Control-Allow-Origin", "*"); 
-    c.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    c.header("Access-Control-Allow-Headers", "Content-Type, Accept");
-    return next();
-});
+app.use("*", cors());
 
 {
 
@@ -209,7 +206,7 @@ app.doc('/doc', {
     },
 });
 
-if( process.env.PORT === undefined ) {
+if (process.env.PORT === undefined) {
     throw new Error("PORT must be defined in the environment variables")
 }
 
