@@ -280,7 +280,7 @@ app.use("*", cors());
 app.doc('/doc', {
     openapi: '3.0.0',
     info: {
-        version: "1.0.8",
+        version: "2.0.0",
         title: 'My API',
     },
 });
