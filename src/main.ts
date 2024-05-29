@@ -11,7 +11,7 @@ const oidcIssuer = process.env.OIDC_ISSUER
 
 console.log(`OIDC_ISSUER: ${oidcIssuer}`);
 
-if (oidcIssuer === undefined ) {
+if (oidcIssuer === undefined) {
     throw new Error("OIDC_ISSUER must be defined in the environment variables")
 }
 
@@ -42,30 +42,36 @@ app.use("*", cors());
                         example: '1212121',
                     })
             }),
-            headers: z.object({
-                text: z
-                    .string()
-                    .min(1)
-                    .optional()
-                    .openapi({
-                        param: {
-                            name: "text",
-                            in: "header",
-                        },
-                        example: "Clean my room",
-                    }),
-                isDone: z
-                    .boolean()
-                    .optional()
-                    .openapi({
-                        param: {
-                            name: "isDone",
-                            in: "header",
-                        },
-                        example: false,
-                    }),
-            })
+            body: {
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            text: z
+                                .string()
+                                .min(1)
+                                .optional()
+                                .openapi({
+                                    param: {
+                                        name: "text",
+                                        in: "header",
+                                    },
+                                    example: "Clean my room",
+                                }),
+                            isDone: z
+                                .boolean()
+                                .optional()
+                                .openapi({
+                                    param: {
+                                        name: "isDone",
+                                        in: "header",
+                                    },
+                                    example: false,
+                                }),
 
+                        })
+                    }
+                }
+            }
         },
         responses: {
             200: {
@@ -85,7 +91,7 @@ app.use("*", cors());
         }
 
         const { id } = c.req.valid("param");
-        const { text, isDone } = c.req.valid("header");
+        const { text, isDone } = c.req.valid("json");
 
         const todoStore = getUserTodoStore(decodedAccessToken.sub);
 
@@ -115,18 +121,24 @@ app.use("*", cors());
         method: "put",
         path: "/todo",
         request: {
-            headers: z.object({
-                text: z
-                    .string()
-                    .min(1)
-                    .openapi({
-                        param: {
-                            name: "text",
-                            in: "header",
-                        },
-                        example: "Clean my room",
-                    })
-            })
+            body: {
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            text: z
+                                .string()
+                                .min(1)
+                                .openapi({
+                                    param: {
+                                        name: "text",
+                                        in: "header",
+                                    },
+                                    example: "Clean my room",
+                                })
+                        })
+                    }
+                }
+            }
 
         },
         responses: {
@@ -158,7 +170,7 @@ app.use("*", cors());
             throw new HTTPException(401);
         }
 
-        const { text } = c.req.valid("header");
+        const { text } = c.req.valid("json");
 
         const todoStore = getUserTodoStore(decodedAccessToken.sub);
 
