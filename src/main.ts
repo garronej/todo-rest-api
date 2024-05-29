@@ -4,6 +4,7 @@ import { createValidateAndDecodeAccessToken } from "./tools/validateAndDecodeAcc
 import { HTTPException } from "hono/http-exception";
 import { getUserTodoStore } from "./todo";
 import { cors } from "hono/cors";
+import { assert } from "tsafe/assert";
 
 
 const oidcIssuer = process.env.OIDC_ISSUER
@@ -41,23 +42,25 @@ app.use("*", cors());
                         example: '1212121',
                     })
             }),
-            query: z.object({
+            headers: z.object({
                 text: z
                     .string()
                     .min(1)
+                    .optional()
                     .openapi({
                         param: {
                             name: "text",
-                            in: "query",
+                            in: "header",
                         },
                         example: "Clean my room",
                     }),
                 isDone: z
                     .boolean()
+                    .optional()
                     .openapi({
                         param: {
                             name: "isDone",
-                            in: "query",
+                            in: "header",
                         },
                         example: false,
                     }),
@@ -66,7 +69,7 @@ app.use("*", cors());
         },
         responses: {
             200: {
-                description: 'Create or update a todo item',
+                description: 'Update an existing todo item',
             },
         },
     });
@@ -82,12 +85,18 @@ app.use("*", cors());
         }
 
         const { id } = c.req.valid("param");
-        const { text, isDone } = c.req.valid("query");
+        const { text, isDone } = c.req.valid("header");
 
-        getUserTodoStore(decodedAccessToken.sub).addOrUpdate({
+        const todoStore = getUserTodoStore(decodedAccessToken.sub);
+
+        const todo = todoStore.getAll().find(({ id: todoId }) => todoId === id);
+
+        assert(todo !== undefined);
+
+        todoStore.addOrUpdate({
             id,
-            text,
-            isDone
+            text: text ?? todo.text,
+            isDone: isDone ?? todo.isDone,
         });
 
         return c.json({
@@ -98,6 +107,76 @@ app.use("*", cors());
 
 
 }
+
+
+{
+
+    const route = createRoute({
+        method: "put",
+        path: "/todo",
+        request: {
+            headers: z.object({
+                text: z
+                    .string()
+                    .min(1)
+                    .openapi({
+                        param: {
+                            name: "text",
+                            in: "header",
+                        },
+                        example: "Clean my room",
+                    })
+            })
+
+        },
+        responses: {
+            200: {
+                content: {
+                    'application/json': {
+                        schema: z.object({
+                            id: z.string()
+                                .openapi({
+                                    example: '123',
+                                    description: "The id of the newly created todo item"
+                                })
+                        })
+
+                    },
+                },
+                description: "Create a new todo item returns the newly created todo item's id",
+            },
+        },
+    });
+
+    app.openapi(route, async c => {
+
+        const { decodedAccessToken } = await validateAndDecodeAccessToken({
+            authorizationReqHeaderValue: c.req.header("Authorization")
+        });
+
+        if (decodedAccessToken === undefined) {
+            throw new HTTPException(401);
+        }
+
+        const { text } = c.req.valid("header");
+
+        const todoStore = getUserTodoStore(decodedAccessToken.sub);
+
+        const id = Math.random().toString();
+
+        todoStore.addOrUpdate({
+            id,
+            isDone: false,
+            text,
+        });
+
+        return c.json({ id });
+
+    });
+
+
+}
+
 
 {
 
