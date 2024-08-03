@@ -1,312 +1,299 @@
 import { z, createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { serve } from "@hono/node-server"
-import { createValidateAndDecodeAccessToken } from "./tools/validateAndDecodeAccessToken"
 import { HTTPException } from "hono/http-exception";
 import { getUserTodoStore } from "./todo";
 import { cors } from "hono/cors";
 import { assert } from "tsafe/assert";
+import { createDecodeAccessToken } from "./oidc";
 
+(async function main() {
 
-const oidcIssuer = process.env.OIDC_ISSUER
+    const { decodeAccessToken } = await createDecodeAccessToken();
 
-console.log(`OIDC_ISSUER: ${oidcIssuer}`);
+    const app = new OpenAPIHono();
 
-if (oidcIssuer === undefined) {
-    throw new Error("OIDC_ISSUER must be defined in the environment variables")
-}
+    app.use("*", cors());
 
-const { validateAndDecodeAccessToken } = createValidateAndDecodeAccessToken({
-    oidcIssuer
-});
+    {
 
-
-const app = new OpenAPIHono();
-
-app.use("*", cors());
-
-{
-
-    const route = createRoute({
-        method: 'put',
-        path: '/todo/{id}',
-        request: {
-            params: z.object({
-                id: z
-                    .string()
-                    .min(1)
-                    .openapi({
-                        param: {
-                            name: 'id',
-                            in: 'path',
-                        },
-                        example: '1212121',
-                    })
-            }),
-            body: {
-                content: {
-                    "application/json": {
-                        schema: z.object({
-                            text: z
-                                .string()
-                                .min(1)
-                                .optional()
-                                .openapi({
-                                    param: {
-                                        name: "text",
-                                        in: "header",
-                                    },
-                                    example: "Clean my room",
-                                }),
-                            isDone: z
-                                .boolean()
-                                .optional()
-                                .openapi({
-                                    param: {
-                                        name: "isDone",
-                                        in: "header",
-                                    },
-                                    example: false,
-                                }),
-
+        const route = createRoute({
+            method: 'put',
+            path: '/todo/{id}',
+            request: {
+                params: z.object({
+                    id: z
+                        .string()
+                        .min(1)
+                        .openapi({
+                            param: {
+                                name: 'id',
+                                in: 'path',
+                            },
+                            example: '1212121',
                         })
-                    }
-                }
-            }
-        },
-        responses: {
-            200: {
-                description: 'Update an existing todo item',
-            },
-        },
-    });
-
-    app.openapi(route, async c => {
-
-        const { decodedAccessToken } = await validateAndDecodeAccessToken({
-            authorizationReqHeaderValue: c.req.header("Authorization")
-        });
-
-        if (decodedAccessToken === undefined) {
-            throw new HTTPException(401);
-        }
-
-        const { id } = c.req.valid("param");
-        const { text, isDone } = c.req.valid("json");
-
-        const todoStore = getUserTodoStore(decodedAccessToken.sub);
-
-        const todo = todoStore.getAll().find(({ id: todoId }) => todoId === id);
-
-        assert(todo !== undefined);
-
-        todoStore.addOrUpdate({
-            id,
-            text: text ?? todo.text,
-            isDone: isDone ?? todo.isDone,
-        });
-
-        return c.json({
-            message: 'Todo item created or updated',
-        });
-
-    });
-
-
-}
-
-
-{
-
-    const route = createRoute({
-        method: "put",
-        path: "/todo",
-        request: {
-            body: {
-                content: {
-                    "application/json": {
-                        schema: z.object({
-                            text: z
-                                .string()
-                                .min(1)
-                                .openapi({
-                                    param: {
-                                        name: "text",
-                                        in: "header",
-                                    },
-                                    example: "Clean my room",
-                                })
-                        })
-                    }
-                }
-            }
-
-        },
-        responses: {
-            200: {
-                content: {
-                    'application/json': {
-                        schema: z.object({
-                            id: z.string()
-                                .openapi({
-                                    example: '123',
-                                    description: "The id of the newly created todo item"
-                                })
-                        })
-
-                    },
-                },
-                description: "Create a new todo item returns the newly created todo item's id",
-            },
-        },
-    });
-
-    app.openapi(route, async c => {
-
-        const { decodedAccessToken } = await validateAndDecodeAccessToken({
-            authorizationReqHeaderValue: c.req.header("Authorization")
-        });
-
-        if (decodedAccessToken === undefined) {
-            throw new HTTPException(401);
-        }
-
-        const { text } = c.req.valid("json");
-
-        const todoStore = getUserTodoStore(decodedAccessToken.sub);
-
-        const id = Math.random().toString();
-
-        todoStore.addOrUpdate({
-            id,
-            isDone: false,
-            text,
-        });
-
-        return c.json({ id });
-
-    });
-
-
-}
-
-
-{
-
-    const route = createRoute({
-        method: 'get',
-        path: '/todos',
-        responses: {
-            200: {
-                content: {
-                    'application/json': {
-                        schema: z.array(
-                            z
-                                .object({
-                                    id: z.string().openapi({
-                                        example: '123',
+                }),
+                body: {
+                    content: {
+                        "application/json": {
+                            schema: z.object({
+                                text: z
+                                    .string()
+                                    .min(1)
+                                    .optional()
+                                    .openapi({
+                                        param: {
+                                            name: "text",
+                                            in: "header",
+                                        },
+                                        example: "Clean my room",
                                     }),
-                                    text: z.string().openapi({
-                                        example: 'Clean my room',
-                                    }),
-                                    isDone: z.boolean().openapi({
+                                isDone: z
+                                    .boolean()
+                                    .optional()
+                                    .openapi({
+                                        param: {
+                                            name: "isDone",
+                                            in: "header",
+                                        },
                                         example: false,
-                                    })
-                                })
-                                .openapi("Todo")
-                        )
-                    },
+                                    }),
+
+                            })
+                        }
+                    }
+                }
+            },
+            responses: {
+                200: {
+                    description: 'Update an existing todo item',
                 },
-                description: "Get all user's todo",
             },
-        },
-    });
-
-    app.openapi(route, async c => {
-
-        const { decodedAccessToken } = await validateAndDecodeAccessToken({
-            authorizationReqHeaderValue: c.req.header("Authorization")
         });
 
-        if (decodedAccessToken === undefined) {
-            throw new HTTPException(401);
-        }
+        app.openapi(route, async c => {
 
-        const todos = getUserTodoStore(decodedAccessToken.sub).getAll();
+            const decodedAccessToken = decodeAccessToken({
+                authorizationHeaderValue: c.req.header("Authorization")
+            });
 
-        return c.json(todos);
+            const { id } = c.req.valid("param");
+            const { text, isDone } = c.req.valid("json");
 
-    });
+            const todoStore = getUserTodoStore(decodedAccessToken.sub);
 
-}
+            const todo = todoStore.getAll().find(({ id: todoId }) => todoId === id);
 
-{
+            assert(todo !== undefined);
+
+            todoStore.addOrUpdate({
+                id,
+                text: text ?? todo.text,
+                isDone: isDone ?? todo.isDone,
+            });
+
+            return c.json({
+                message: 'Todo item created or updated',
+            });
+
+        });
 
 
-    const route = createRoute({
-        method: 'delete',
-        path: '/todo/{id}',
-        request: {
-            params: z.object({
-                id: z
-                    .string()
-                    .min(1)
-                    .openapi({
-                        param: {
-                            name: 'id',
-                            in: 'path',
+    }
+
+
+    {
+
+        const route = createRoute({
+            method: "put",
+            path: "/todo",
+            request: {
+                body: {
+                    content: {
+                        "application/json": {
+                            schema: z.object({
+                                text: z
+                                    .string()
+                                    .min(1)
+                                    .openapi({
+                                        param: {
+                                            name: "text",
+                                            in: "header",
+                                        },
+                                        example: "Clean my room",
+                                    })
+                            })
+                        }
+                    }
+                }
+
+            },
+            responses: {
+                200: {
+                    content: {
+                        'application/json': {
+                            schema: z.object({
+                                id: z.string()
+                                    .openapi({
+                                        example: '123',
+                                        description: "The id of the newly created todo item"
+                                    })
+                            })
+
                         },
-                        example: '1212121',
-                    }),
-            })
-        },
-        responses: {
-            200: {
-                description: 'Deleted a todo item'
+                    },
+                    description: "Create a new todo item returns the newly created todo item's id",
+                },
             },
+        });
+
+        app.openapi(route, async c => {
+
+            const decodedAccessToken = decodeAccessToken({
+                authorizationHeaderValue: c.req.header("Authorization")
+            });
+
+            if (decodedAccessToken === undefined) {
+                throw new HTTPException(401);
+            }
+
+            const { text } = c.req.valid("json");
+
+            const todoStore = getUserTodoStore(decodedAccessToken.sub);
+
+            const id = Math.random().toString();
+
+            todoStore.addOrUpdate({
+                id,
+                isDone: false,
+                text,
+            });
+
+            return c.json({ id });
+
+        });
+
+
+    }
+
+
+    {
+
+        const route = createRoute({
+            method: 'get',
+            path: '/todos',
+            responses: {
+                200: {
+                    content: {
+                        'application/json': {
+                            schema: z.array(
+                                z
+                                    .object({
+                                        id: z.string().openapi({
+                                            example: '123',
+                                        }),
+                                        text: z.string().openapi({
+                                            example: 'Clean my room',
+                                        }),
+                                        isDone: z.boolean().openapi({
+                                            example: false,
+                                        })
+                                    })
+                                    .openapi("Todo")
+                            )
+                        },
+                    },
+                    description: "Get all user's todo",
+                },
+            },
+        });
+
+        app.openapi(route, async c => {
+
+            const decodedAccessToken = decodeAccessToken({
+                authorizationHeaderValue: c.req.header("Authorization")
+            });
+
+            if (decodedAccessToken === undefined) {
+                throw new HTTPException(401);
+            }
+
+            const todos = getUserTodoStore(decodedAccessToken.sub).getAll();
+
+            return c.json(todos);
+
+        });
+
+    }
+
+    {
+
+
+        const route = createRoute({
+            method: 'delete',
+            path: '/todo/{id}',
+            request: {
+                params: z.object({
+                    id: z
+                        .string()
+                        .min(1)
+                        .openapi({
+                            param: {
+                                name: 'id',
+                                in: 'path',
+                            },
+                            example: '1212121',
+                        }),
+                })
+            },
+            responses: {
+                200: {
+                    description: 'Deleted a todo item'
+                },
+            },
+        });
+
+        app.openapi(route, async c => {
+
+            const decodedAccessToken = decodeAccessToken({
+                authorizationHeaderValue: c.req.header("Authorization")
+            });
+
+            const { id } = c.req.valid("param");
+
+            if (decodedAccessToken === undefined) {
+                throw new HTTPException(401);
+            }
+
+            getUserTodoStore(decodedAccessToken.sub).remove(id);
+
+            return c.json({
+                message: 'Todo item deleted',
+            });
+
+        });
+
+    }
+
+    // The OpenAPI documentation will be available at /doc
+    app.doc('/doc', {
+        openapi: '3.0.0',
+        info: {
+            version: "2.0.1",
+            title: 'My API',
         },
     });
 
-    app.openapi(route, async c => {
+    if (process.env.PORT === undefined) {
+        throw new Error("PORT must be defined in the environment variables")
+    }
 
-        const { decodedAccessToken } = await validateAndDecodeAccessToken({
-            authorizationReqHeaderValue: c.req.header("Authorization")
-        });
+    const port = parseInt(process.env.PORT);
 
-        const { id } = c.req.valid("param");
+    serve({
+        fetch: app.fetch,
+        port
+    })
 
-        if (decodedAccessToken === undefined) {
-            throw new HTTPException(401);
-        }
+    console.log(`\nServer running. OpenAPI documentation available at http://localhost:${port}/doc`)
 
-        getUserTodoStore(decodedAccessToken.sub).remove(id);
-
-        return c.json({
-            message: 'Todo item deleted',
-        });
-
-    });
-
-}
-
-// The OpenAPI documentation will be available at /doc
-app.doc('/doc', {
-    openapi: '3.0.0',
-    info: {
-        version: "2.0.1",
-        title: 'My API',
-    },
-});
-
-if (process.env.PORT === undefined) {
-    throw new Error("PORT must be defined in the environment variables")
-}
-
-const port = parseInt(process.env.PORT);
-
-serve({
-    fetch: app.fetch,
-    port
-})
-
-console.log(`\nServer running. OpenAPI documentation available at http://localhost:${port}/doc`)
-
+})();
