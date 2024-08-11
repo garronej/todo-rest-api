@@ -14,7 +14,7 @@
     },
     "author": "u/garronej",
     "license": "MIT",
-    "keywords": [],
+    "keywords": ["todo", "todos", "rest", "api"],
     "dependencies": {
         "@hono/node-server": "^1.11.1",
         "@hono/zod-openapi": "^0.13.0",
