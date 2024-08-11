@@ -278,8 +278,9 @@ import { createDecodeAccessToken } from "./oidc";
     app.doc('/doc', {
         openapi: '3.0.0',
         info: {
-            version: "2.0.1",
-            title: 'My API',
+            // NOTE: Replaced at build time
+            version: "{{VERSION}}",
+            title: "todos"
         },
     });
 

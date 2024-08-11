@@ -6,7 +6,7 @@
         "url": "git://github.com/InseeFrLab/todo-rest-api.git"
     },
     "scripts": {
-        "build": "tsc && ncc build dist/main.js",
+        "build": "tsx scripts/build.ts",
         "dev": "yarn build && dotenv -e .env.local -- node dist",
         "_format": "prettier \"**/*.{ts,tsx,json,md}\"",
         "format": "yarn run _format --write",
@@ -28,6 +28,7 @@
         "@types/node": "^20.12.12",
         "@vercel/ncc": "^0.38.1",
         "dotenv-cli": "^7.4.1",
-        "typescript": "^5.4.5"
+        "typescript": "^5.4.5",
+        "tsx": "^4.3.0"
     }
 }
