@@ -245,10 +245,10 @@ minimist@^1.2.6:
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
 
-oidc-spa@^6.1.10:
-  version "6.1.10"
-  resolved "https://registry.yarnpkg.com/oidc-spa/-/oidc-spa-6.1.10.tgz#b822600e9ee364880e57a2d8fd86539363972520"
-  integrity sha512-PjqB64Y3Gic31J+54kt8VVcxndUaTWt6vGPYlTW7GJR5xOFOLAy8242n1fd1qVkXkzgsdwLy+af9uIlst7KHnA==
+oidc-spa@^6.1.17:
+  version "6.1.17"
+  resolved "https://registry.yarnpkg.com/oidc-spa/-/oidc-spa-6.1.17.tgz#3e8ed7662f99a93515c23d9f18f56c8b5eb5345a"
+  integrity sha512-SiwOZKtGSlgDSSTkgR91VndIEj7UvbRfgdBco8JPSeIL4H/fWZIV59+JaqDUmtDGhRMPao28lJvt5u9jEeip3g==
 
 openapi3-ts@^4.1.2:
   version "4.3.1"
