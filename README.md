@@ -10,7 +10,8 @@ The easier way to deploy it is to use [Railway](https://railway.app/).
 You need to set the following environment variables.  
 
 ```.env
-OIDC_ISSUER=https://auth.code.gouv.fr/auth/realms/playground
+OIDC_ISSUER_URI=https://auth.code.gouv.fr/auth/realms/playground
+OIDC_AUDIENCE=vite-insee-starter
 PORT=8080
 ```
 

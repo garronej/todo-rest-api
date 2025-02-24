@@ -1,5 +1,5 @@
 import { z, createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import { serve } from "@hono/node-server"
+import { serve } from "@hono/node-server";
 import { HTTPException } from "hono/http-exception";
 import { getUserTodoStore } from "./todo";
 import { cors } from "hono/cors";
@@ -7,18 +7,31 @@ import { assert } from "tsafe/assert";
 import { createDecodeAccessToken } from "./oidc";
 
 (async function main() {
+    const { decodeAccessToken } = await createDecodeAccessToken({
+        issuerUri: (() => {
+            const value = process.env.OIDC_ISSUER_URI;
 
-    const { decodeAccessToken } = await createDecodeAccessToken();
+            assert(value !== undefined, "OIDC_ISSUER_URI must be defined");
+
+            return value;
+        })(),
+        audience: (() => {
+            const value = process.env.OIDC_AUDIENCE;
+
+            assert(value !== undefined, "OIDC_AUDIENCE must be defined");
+
+            return value;
+        })()
+    });
 
     const app = new OpenAPIHono();
 
     app.use("*", cors());
 
     {
-
         const route = createRoute({
-            method: 'put',
-            path: '/todo/{id}',
+            method: "put",
+            path: "/todo/{id}",
             request: {
                 params: z.object({
                     id: z
@@ -26,10 +39,10 @@ import { createDecodeAccessToken } from "./oidc";
                         .min(1)
                         .openapi({
                             param: {
-                                name: 'id',
-                                in: 'path',
+                                name: "id",
+                                in: "path"
                             },
-                            example: '1212121',
+                            example: "1212121"
                         })
                 }),
                 body: {
@@ -43,9 +56,9 @@ import { createDecodeAccessToken } from "./oidc";
                                     .openapi({
                                         param: {
                                             name: "text",
-                                            in: "header",
+                                            in: "header"
                                         },
-                                        example: "Clean my room",
+                                        example: "Clean my room"
                                     }),
                                 isDone: z
                                     .boolean()
@@ -53,11 +66,10 @@ import { createDecodeAccessToken } from "./oidc";
                                     .openapi({
                                         param: {
                                             name: "isDone",
-                                            in: "header",
+                                            in: "header"
                                         },
-                                        example: false,
-                                    }),
-
+                                        example: false
+                                    })
                             })
                         }
                     }
@@ -65,13 +77,12 @@ import { createDecodeAccessToken } from "./oidc";
             },
             responses: {
                 200: {
-                    description: 'Update an existing todo item',
-                },
-            },
+                    description: "Update an existing todo item"
+                }
+            }
         });
 
         app.openapi(route, async c => {
-
             const decodedAccessToken = decodeAccessToken({
                 authorizationHeaderValue: c.req.header("Authorization")
             });
@@ -88,21 +99,16 @@ import { createDecodeAccessToken } from "./oidc";
             todoStore.addOrUpdate({
                 id,
                 text: text ?? todo.text,
-                isDone: isDone ?? todo.isDone,
+                isDone: isDone ?? todo.isDone
             });
 
             return c.json({
-                message: 'Todo item created or updated',
+                message: "Todo item created or updated"
             });
-
         });
-
-
     }
 
-
     {
-
         const route = createRoute({
             method: "put",
             path: "/todo",
@@ -117,37 +123,33 @@ import { createDecodeAccessToken } from "./oidc";
                                     .openapi({
                                         param: {
                                             name: "text",
-                                            in: "header",
+                                            in: "header"
                                         },
-                                        example: "Clean my room",
+                                        example: "Clean my room"
                                     })
                             })
                         }
                     }
                 }
-
             },
             responses: {
                 200: {
                     content: {
-                        'application/json': {
+                        "application/json": {
                             schema: z.object({
-                                id: z.string()
-                                    .openapi({
-                                        example: '123',
-                                        description: "The id of the newly created todo item"
-                                    })
+                                id: z.string().openapi({
+                                    example: "123",
+                                    description: "The id of the newly created todo item"
+                                })
                             })
-
-                        },
+                        }
                     },
-                    description: "Create a new todo item returns the newly created todo item's id",
-                },
-            },
+                    description: "Create a new todo item returns the newly created todo item's id"
+                }
+            }
         });
 
         app.openapi(route, async c => {
-
             const decodedAccessToken = decodeAccessToken({
                 authorizationHeaderValue: c.req.header("Authorization")
             });
@@ -165,50 +167,44 @@ import { createDecodeAccessToken } from "./oidc";
             todoStore.addOrUpdate({
                 id,
                 isDone: false,
-                text,
+                text
             });
 
             return c.json({ id });
-
         });
-
-
     }
 
-
     {
-
         const route = createRoute({
-            method: 'get',
-            path: '/todos',
+            method: "get",
+            path: "/todos",
             responses: {
                 200: {
                     content: {
-                        'application/json': {
+                        "application/json": {
                             schema: z.array(
                                 z
                                     .object({
                                         id: z.string().openapi({
-                                            example: '123',
+                                            example: "123"
                                         }),
                                         text: z.string().openapi({
-                                            example: 'Clean my room',
+                                            example: "Clean my room"
                                         }),
                                         isDone: z.boolean().openapi({
-                                            example: false,
+                                            example: false
                                         })
                                     })
                                     .openapi("Todo")
                             )
-                        },
+                        }
                     },
-                    description: "Get all user's todo",
-                },
-            },
+                    description: "Get all user's todo"
+                }
+            }
         });
 
         app.openapi(route, async c => {
-
             const decodedAccessToken = decodeAccessToken({
                 authorizationHeaderValue: c.req.header("Authorization")
             });
@@ -220,17 +216,13 @@ import { createDecodeAccessToken } from "./oidc";
             const todos = getUserTodoStore(decodedAccessToken.sub).getAll();
 
             return c.json(todos);
-
         });
-
     }
 
     {
-
-
         const route = createRoute({
-            method: 'delete',
-            path: '/todo/{id}',
+            method: "delete",
+            path: "/todo/{id}",
             request: {
                 params: z.object({
                     id: z
@@ -238,22 +230,21 @@ import { createDecodeAccessToken } from "./oidc";
                         .min(1)
                         .openapi({
                             param: {
-                                name: 'id',
-                                in: 'path',
+                                name: "id",
+                                in: "path"
                             },
-                            example: '1212121',
-                        }),
+                            example: "1212121"
+                        })
                 })
             },
             responses: {
                 200: {
-                    description: 'Deleted a todo item'
-                },
-            },
+                    description: "Deleted a todo item"
+                }
+            }
         });
 
         app.openapi(route, async c => {
-
             const decodedAccessToken = decodeAccessToken({
                 authorizationHeaderValue: c.req.header("Authorization")
             });
@@ -267,25 +258,23 @@ import { createDecodeAccessToken } from "./oidc";
             getUserTodoStore(decodedAccessToken.sub).remove(id);
 
             return c.json({
-                message: 'Todo item deleted',
+                message: "Todo item deleted"
             });
-
         });
-
     }
 
     // The OpenAPI documentation will be available at /doc
-    app.doc('/doc', {
-        openapi: '3.0.0',
+    app.doc("/doc", {
+        openapi: "3.0.0",
         info: {
             // NOTE: Replaced at build time
             version: "{{VERSION}}",
             title: "todos"
-        },
+        }
     });
 
     if (process.env.PORT === undefined) {
-        throw new Error("PORT must be defined in the environment variables")
+        throw new Error("PORT must be defined in the environment variables");
     }
 
     const port = parseInt(process.env.PORT);
@@ -293,8 +282,7 @@ import { createDecodeAccessToken } from "./oidc";
     serve({
         fetch: app.fetch,
         port
-    })
+    });
 
-    console.log(`\nServer running. OpenAPI documentation available at http://localhost:${port}/doc`)
-
+    console.log(`\nServer running. OpenAPI documentation available at http://localhost:${port}/doc`);
 })();
