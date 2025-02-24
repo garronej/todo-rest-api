@@ -11,7 +11,7 @@ You need to set the following environment variables (example):
 
 ```.env
 OIDC_ISSUER_URI=https://auth.code.gouv.fr/auth/realms/playground
-OIDC_AUDIENCE=vite-insee-starter
+OIDC_AUDIENCE=account
 PORT=8080
 ```
 
