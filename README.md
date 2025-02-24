@@ -7,7 +7,7 @@ It's purpose is to enable you to have an API to test your OIDC client integratio
 It was originally made for: https://github.com/InseeFrLab/vite-insee-starter  
 
 The easier way to deploy it is to use [Railway](https://railway.app/).  
-You need to set the following environment variables.  
+You need to set the following environment variables (example):  
 
 ```.env
 OIDC_ISSUER_URI=https://auth.code.gouv.fr/auth/realms/playground
@@ -22,9 +22,10 @@ This is a demo with our Keycloak instance, adapt for your own OIDC provider.
 ```bash
 git clone https://github.com/InseeFrLab/todo-rest-api
 cd todo-rest-api
+cp .env.local.sample .env.local
 yarn
-yarn build
 yarn dev
+
 ```
 
 ## Stack
