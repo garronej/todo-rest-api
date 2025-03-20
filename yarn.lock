@@ -245,10 +245,10 @@ minimist@^1.2.6:
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
 
-oidc-spa@^6.5.2:
-  version "6.5.2"
-  resolved "https://registry.yarnpkg.com/oidc-spa/-/oidc-spa-6.5.2.tgz#c4bfeab0b440e821d79c4815f244c177dd72037f"
-  integrity sha512-YZ/Gvo6o/M78C3fQsJK+Zq+AUXOR//+njgeb1bP4dWdfjBFo7qH0x19ccDBaooVLwaa2+mW1o7o3bWKKOIHNhA==
+oidc-spa@^6.9.14:
+  version "6.9.14"
+  resolved "https://registry.yarnpkg.com/oidc-spa/-/oidc-spa-6.9.14.tgz#f07cee36db555ee697011da2746be8f4f90da821"
+  integrity sha512-zcl2+KKeX14JXzQRbpduCs9QrR2q3vMCCarjNEwg+Mv7ubT4fHpAWAb/vNpvr05Y34ErmhKaOrZpm9lO443sag==
 
 openapi3-ts@^4.1.2:
   version "4.3.1"
@@ -279,10 +279,10 @@ shebang-regex@^3.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-3.0.0.tgz#ae16f1644d873ecad843b0307b143362d4c42172"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
 
-tsafe@^1.7.2:
-  version "1.7.2"
-  resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-1.7.2.tgz#0f63d414876287ad01b135f832722f93e22da374"
-  integrity sha512-dAPfQLhCfCRre5qs+Z5Q2a7s2CV7RxffZUmvj7puGaePYjECzWREJFd3w4XSFe/T5tbxgowfItA/JSSZ6Ma3dA==
+tsafe@^1.8.5:
+  version "1.8.5"
+  resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-1.8.5.tgz#cdf9fa3111974ac480d7ee519f8241815e5d22ea"
+  integrity sha512-LFWTWQrW6rwSY+IBNFl2ridGfUzVsPwrZ26T4KUJww/py8rzaQ/SY+MIz6YROozpUCaRcuISqagmlwub9YT9kw==
 
 tsx@^4.3.0:
   version "4.17.0"

@@ -1,48 +1,81 @@
-import { createOidcBackend } from "oidc-spa/backend";
+import { createOidcBackend, type ResultOfAccessTokenVerify } from "oidc-spa/backend";
 import { z } from "zod";
 import { HTTPException } from "hono/http-exception";
+import { decodeJwt } from "oidc-spa/tools/decodeJwt";
+import { assert, is } from "tsafe/assert";
 
 const zDecodedAccessToken = z.object({
-    sub: z.string(),
-    aud: z.union([z.string(), z.array(z.string())]),
-    realm_access: z.object({
-        roles: z.array(z.string())
-    })
-    // Some other info you might want to read from the accessToken, example:
-    // preferred_username: z.string()
+    iss: z.string(),
+    sub: z.string()
 });
 
 export type DecodedAccessToken = z.infer<typeof zDecodedAccessToken>;
 
-export async function createDecodeAccessToken(params: { 
-    issuerUri: string;
-    audience: string 
-}) {
-    const { issuerUri, audience } = params;
+export async function createDecodeAccessToken() {
 
-    const { verifyAndDecodeAccessToken } = await createOidcBackend({
-        issuerUri,
-        decodedAccessTokenSchema: zDecodedAccessToken
-    });
+    const verifyAndDecodeAccessTokenByIssuerUri = new Map<
+        string,
+        (params: {
+            accessToken: string;
+        }) => ResultOfAccessTokenVerify<DecodedAccessToken>
+    >();
 
-    function decodeAccessToken(params: {
+    async function decodeAccessToken(params: {
         authorizationHeaderValue: string | undefined;
-        requiredRole?: string;
-    }): DecodedAccessToken {
-        const { authorizationHeaderValue, requiredRole } = params;
+    }): Promise<DecodedAccessToken> {
+        const { authorizationHeaderValue } = params;
 
         if (authorizationHeaderValue === undefined) {
             throw new HTTPException(401);
         }
 
+        const accessToken = authorizationHeaderValue.replace(/^Bearer /, "");
+
+        const issuerUri = (() => {
+            let decodedAccessToken: unknown;
+
+            try {
+                decodedAccessToken = decodeJwt(accessToken);
+            } catch {
+                throw new HTTPException(401);
+            }
+
+            try {
+                zDecodedAccessToken.parse(decodedAccessToken);
+            } catch {
+                throw new HTTPException(401);
+            }
+
+            assert(is<DecodedAccessToken>(decodedAccessToken));
+
+            return decodedAccessToken.iss;
+        })();
+
+        let verifyAndDecodeAccessToken = verifyAndDecodeAccessTokenByIssuerUri.get(issuerUri);
+
+        if (verifyAndDecodeAccessToken === undefined) {
+            try {
+                verifyAndDecodeAccessToken = (
+                    await createOidcBackend({
+                        issuerUri,
+                        decodedAccessTokenSchema: zDecodedAccessToken
+                    })
+                ).verifyAndDecodeAccessToken;
+            } catch {
+                throw new HTTPException(401);
+            }
+
+            verifyAndDecodeAccessTokenByIssuerUri.set(issuerUri, verifyAndDecodeAccessToken);
+        }
+
         const result = verifyAndDecodeAccessToken({
-            accessToken: authorizationHeaderValue.replace(/^Bearer /, "")
+            accessToken
         });
 
         if (!result.isValid) {
             switch (result.errorCase) {
                 case "does not respect schema":
-                    throw new Error(`The access token does not respect the schema ${result.errorMessage}`);
+                    assert(false);
                 case "invalid signature":
                 case "expired":
                     throw new HTTPException(401);
@@ -51,19 +84,6 @@ export async function createDecodeAccessToken(params: {
 
         const { decodedAccessToken } = result;
 
-        if (requiredRole !== undefined && !decodedAccessToken.realm_access.roles.includes(requiredRole)) {
-            throw new HTTPException(401);
-        }
-
-        {
-            const { aud } = decodedAccessToken;
-
-            const aud_array = typeof aud === "string" ? [aud] : aud;
-
-            if (!aud_array.includes(audience)) {
-                throw new HTTPException(401);
-            }
-        }
 
         return decodedAccessToken;
     }

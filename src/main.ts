@@ -7,22 +7,7 @@ import { assert } from "tsafe/assert";
 import { createDecodeAccessToken } from "./oidc";
 
 (async function main() {
-    const { decodeAccessToken } = await createDecodeAccessToken({
-        issuerUri: (() => {
-            const value = process.env.OIDC_ISSUER_URI;
-
-            assert(value !== undefined, "OIDC_ISSUER_URI must be defined");
-
-            return value;
-        })(),
-        audience: (() => {
-            const value = process.env.OIDC_AUDIENCE;
-
-            assert(value !== undefined, "OIDC_AUDIENCE must be defined");
-
-            return value;
-        })()
-    });
+    const { decodeAccessToken } = await createDecodeAccessToken();
 
     const app = new OpenAPIHono();
 
@@ -83,7 +68,7 @@ import { createDecodeAccessToken } from "./oidc";
         });
 
         app.openapi(route, async c => {
-            const decodedAccessToken = decodeAccessToken({
+            const decodedAccessToken = await decodeAccessToken({
                 authorizationHeaderValue: c.req.header("Authorization")
             });
 
@@ -150,7 +135,7 @@ import { createDecodeAccessToken } from "./oidc";
         });
 
         app.openapi(route, async c => {
-            const decodedAccessToken = decodeAccessToken({
+            const decodedAccessToken = await decodeAccessToken({
                 authorizationHeaderValue: c.req.header("Authorization")
             });
 
@@ -205,7 +190,7 @@ import { createDecodeAccessToken } from "./oidc";
         });
 
         app.openapi(route, async c => {
-            const decodedAccessToken = decodeAccessToken({
+            const decodedAccessToken = await decodeAccessToken({
                 authorizationHeaderValue: c.req.header("Authorization")
             });
 
@@ -245,7 +230,7 @@ import { createDecodeAccessToken } from "./oidc";
         });
 
         app.openapi(route, async c => {
-            const decodedAccessToken = decodeAccessToken({
+            const decodedAccessToken = await decodeAccessToken({
                 authorizationHeaderValue: c.req.header("Authorization")
             });
 
