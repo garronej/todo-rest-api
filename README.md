@@ -4,7 +4,8 @@
 Very basic todo app REST API with oidc and Open API.  
 It's published as a docker image: [garronej/todo-rest-api](https://hub.docker.com/r/garronej/todo-rest-api).  
 It's purpose is to enable you to have an API to test your OIDC client integration.  
-It was originally made for: https://github.com/garronej/oidc-spa examples.  
+
+It's up here: https://todo-rest-api.oidc-spa.dev/doc/
 
 Don't use this in production. 
 It will just accept any issuerUri present in the iss claim of the JWT access token used as Authorization bearer header.  
