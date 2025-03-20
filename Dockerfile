@@ -2,8 +2,9 @@
 FROM node:18-alpine3.17 as build
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --ignore-scripts
 COPY . .
+RUN yarn install --frozen-lockfile
 RUN yarn build
 
 # production environment

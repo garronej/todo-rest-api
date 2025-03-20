@@ -258,11 +258,7 @@ import { createDecodeAccessToken } from "./oidc";
         }
     });
 
-    if (process.env.PORT === undefined) {
-        throw new Error("PORT must be defined in the environment variables");
-    }
-
-    const port = parseInt(process.env.PORT);
+    const port = 8080;
 
     serve({
         fetch: app.fetch,

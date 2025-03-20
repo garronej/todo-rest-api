@@ -13,10 +13,7 @@ If you want a secure example check: [garronej/todo-rest-api](https://github.com/
 The easier way to deploy it is to use [Railway](https://railway.app/).  
 You need to set the following environment variables (example):  
 
-
-```.env
-PORT=8080
-```
+**The port is 8080**
 
 This is a demo with our Keycloak instance, adapt for your own OIDC provider.  
 
