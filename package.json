@@ -3,7 +3,7 @@
     "version": "2.0.9",
     "repository": {
         "type": "git",
-        "url": "git://github.com/keycloakify/todo-rest-api.git"
+        "url": "git://github.com/garronej/todo-rest-api.git"
     },
     "scripts": {
         "build": "tsx scripts/build.ts",
